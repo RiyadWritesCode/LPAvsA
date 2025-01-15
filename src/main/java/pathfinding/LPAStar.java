@@ -3,10 +3,12 @@ package pathfinding;
 import java.util.*;
 
 public class LPAStar {
+    PriorityQueue<Node> pq;
+
     public Grid run(Grid grid) {
         Node start = grid.findStart();
         Node goal = grid.findGoal();
-        PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> {
+        pq = new PriorityQueue<>((a, b) -> {
             int[] keyA = a.lCalculateKey(goal);
             int[] keyB = b.lCalculateKey(goal);
             return compareKeys(keyA, keyB);
@@ -15,27 +17,47 @@ public class LPAStar {
         start.lRHS = 0;
         pq.add(start);
 
+        computeShortestPath(grid, goal);
+        return grid;
+    }
+
+    public void computeShortestPath(Grid grid, Node goal) {
         while (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1 || goal.lRHS != goal.lG) {
             Node u = pq.poll();
             if (u.lG > u.lRHS) {
                 u.lG = u.lRHS;
-                updateVertex(grid, pq, u);
+                updateNode(grid, u);
             } else {
                 u.lG = 999999999;
-                updateVertex(grid, pq, u);
+                updateNode(grid, u);
             }
 
             List<Node> neighbors = getNeighbors(grid, u);
             for (Node neighbor: neighbors) {
-                updateVertex(grid, pq, neighbor);
+                updateNode(grid, neighbor);
             }
         }
-
         constructPath(grid, goal);
+
+    }
+
+    public Grid runUpdate(Grid grid, List<Node> updatedNodes) {
+        for (int i = 0; i < updatedNodes.size(); i++) {
+            Node updatedNode = updatedNodes.get(i);
+            List<Node> neighbors = getNeighbors(grid, updatedNode);
+            for (Node neighbor : neighbors) {
+                updateNode(grid, neighbor);
+            }
+            if (!updatedNode.isObstacle) {
+                updateNode(grid, updatedNode);
+            }
+        }
+        Node goal = grid.findGoal();
+        computeShortestPath(grid, goal);
         return grid;
     }
 
-    void updateVertex(Grid grid, PriorityQueue pq, Node u) {
+    void updateNode(Grid grid, Node u) {
         if (u != grid.findStart()) {
             int minRHS = 999999999;
 
@@ -57,9 +79,9 @@ public class LPAStar {
     public static int getCost(Grid grid, Node a, Node b) {
         int cost = 10;
         // Check if the move is diagonal by comparing the row and column differences
-        if (grid.grid[a.row][a.col].isObstacle || grid.grid[b.row][b.col].isObstacle) {
-            cost = 999999999;
-        } else if (Math.abs(a.row - b.row) == 1 && Math.abs(a.col - b.col) == 1)  {
+//        if (grid.grid[a.row][a.col].isObstacle || grid.grid[b.row][b.col].isObstacle) {
+//            cost = 999999999;
+        if (Math.abs(a.row - b.row) == 1 && Math.abs(a.col - b.col) == 1)  {
             cost = 14;
         }
 
@@ -68,11 +90,11 @@ public class LPAStar {
 
     void constructPath(Grid grid, Node current) {
         current.isShortestPath = true;
-
+        System.out.println(current.lG);
         if (!current.isStart) {
-            int minCost = 999999999;
-            List<Node> neighbors = getNeighbors(grid, current);
             Node bestNeighbor = null;
+            List<Node> neighbors = getNeighbors(grid, current);
+            int minCost = 999999999;
             for (Node neighbor : neighbors) {
                 if (neighbor.lG < minCost) {
                     minCost = neighbor.lG;
@@ -80,6 +102,7 @@ public class LPAStar {
                 }
             }
 
+            current.parent = bestNeighbor;
             constructPath(grid, bestNeighbor);
         }
     }
@@ -90,7 +113,7 @@ public class LPAStar {
         for (int[] dir : directions) {
             int newRow = node.row + dir[0];
             int newCol = node.col + dir[1];
-            if (grid.isValidCoord(newRow, newCol)) {
+            if (grid.isValidCoord(newRow, newCol) && !grid.grid[newRow][newCol].isObstacle) {
                 Node neighbor = grid.grid[newRow][newCol];
                 neighbors.add(neighbor);
             }

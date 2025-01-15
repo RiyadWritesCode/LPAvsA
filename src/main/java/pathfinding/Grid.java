@@ -132,7 +132,7 @@ public class Grid {
         }
     }
 
-    public void moveObstacles(int percent) {
+    public List<Node> moveObstacles(int percent) {
         if (percent < 0 || percent > 100) {
             throw new IllegalArgumentException("Percentage must be between 0 and 100");
         }
@@ -160,12 +160,18 @@ public class Grid {
         Collections.shuffle(availableNodes);
         Collections.shuffle(obstacleNodes);
 
+        List<Node> updatedNodes = new ArrayList<>();
         for (int i = 0; i < obstaclesToMove; i++) {
             Node obstacleNode = obstacleNodes.get(i);
             Node availableNode = availableNodes.get(i);
-            obstacleNode.isObstacle = !obstacleNode.isObstacle;
-            availableNode.isObstacle = !availableNode.isObstacle;
+            obstacleNode.isObstacle = false;
+            availableNode.isObstacle = true;
+//            grid[availableNode.row][availableNode.col].lRHS = 999999999;
+//            grid[availableNode.row][availableNode.col].lG = 999999999;
+            updatedNodes.add(obstacleNode);
+            updatedNodes.add(availableNode);
         }
+        return updatedNodes;
     }
 
     // Check if a node is within bounds
@@ -192,5 +198,40 @@ public class Grid {
                 grid[row][col].isShortestPath = false;
             }
         }
+    }
+
+    public int getShortestPathCost() {
+        Node goalNode = findGoal();
+        Node current = goalNode;
+        int totalCost = 0;
+        while (current.parent != null) {
+            if (current.isObstacle) {
+                throw new IllegalStateException(
+                        "Invalid path: Node at (" + current.row + ", " + current.col + ") is an obstacle."
+                );
+            }
+            int rowDiff = Math.abs(current.row - current.parent.row);
+            int colDiff = Math.abs(current.col - current.parent.col);
+
+            if (rowDiff > 1 || colDiff > 1) {
+                throw new IllegalStateException(
+                        "Invalid path: Jump detected between (" + current.row + ", " + current.col + ") and "
+                                + "(" + current.parent.row + ", " + current.parent.col + ")."
+                );
+            }
+
+            if (rowDiff == 1 && colDiff == 1) {
+                totalCost += 14;
+            } else {
+                totalCost += 10;
+            }
+            current = current.parent;
+        }
+        if (current.isObstacle) {
+            throw new IllegalStateException(
+                    "Invalid path: Start node at (" + current.row + ", " + current.col + ") is an obstacle."
+            );
+        }
+        return totalCost;
     }
 }

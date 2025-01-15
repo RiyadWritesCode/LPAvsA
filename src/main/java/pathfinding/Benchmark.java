@@ -1,4 +1,5 @@
 package pathfinding;
+import java.util.*;
 
 public class Benchmark {
 
@@ -18,16 +19,23 @@ public class Benchmark {
 
         grid = dijkstra.run(grid);
         System.out.println(grid.pathLength());
+        System.out.println(grid.getShortestPathCost());
+
 
         grid.clearGrid();
 
         grid = astar.run(grid);
         System.out.println(grid.pathLength());
+        System.out.println(grid.getShortestPathCost());
 
         grid.clearGrid();
         grid = lpastar.run(grid);
         System.out.println(grid.pathLength());
+        System.out.println(grid.getShortestPathCost());
 
-
+        List<Node> updatedNodes = grid.moveObstacles(10);
+        grid = lpastar.runUpdate(grid, updatedNodes);
+        System.out.println(grid.pathLength());
+        System.out.println(grid.getShortestPathCost());
     }
 }
