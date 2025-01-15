@@ -1,4 +1,108 @@
 package pathfinding;
 
+import java.util.*;
+
 public class LPAStar {
+    public Grid run(Grid grid) {
+        Node start = grid.findStart();
+        Node goal = grid.findGoal();
+        PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> {
+            int[] keyA = a.lCalculateKey(goal);
+            int[] keyB = b.lCalculateKey(goal);
+            return compareKeys(keyA, keyB);
+        });
+
+        start.lRHS = 0;
+        pq.add(start);
+
+        while (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1 || goal.lRHS != goal.lG) {
+            Node u = pq.poll();
+            if (u.lG > u.lRHS) {
+                u.lG = u.lRHS;
+                updateVertex(grid, pq, u);
+            } else {
+                u.lG = Integer.MAX_VALUE;
+                updateVertex(grid, pq, u);
+            }
+
+            List<Node> neighbors = getNeighbors(grid, u);
+            for (Node neighbor: neighbors) {
+                updateVertex(grid, pq, neighbor);
+            }
+        }
+
+        constructPath(grid, goal);
+        return grid;
+    }
+
+    void updateVertex(Grid grid, PriorityQueue pq, Node u) {
+        if (u != grid.findStart()) {
+            int minRHS = Integer.MAX_VALUE;
+
+            List<Node> neighbors = getNeighbors(grid, u);
+            for (Node neighbor: neighbors) {
+                int tentativeRHS = neighbor.lG + getCost(grid, neighbor, u);
+                if (tentativeRHS < minRHS) {
+                    minRHS = tentativeRHS;
+                }
+            }
+            u.lRHS = minRHS;
+        }
+        pq.remove(u);
+        if (u.lG != u.lRHS) {
+            pq.add(u);
+        }
+    }
+
+    public static int getCost(Grid grid, Node a, Node b) {
+        int cost = 10;
+        // Check if the move is diagonal by comparing the row and column differences
+        if (grid.grid[a.row][a.col].isObstacle || grid.grid[b.row][b.col].isObstacle) {
+            cost = Integer.MAX_VALUE;
+        } else if (Math.abs(a.row - b.row) == 1 && Math.abs(a.col - b.col) == 1)  {
+            cost = 14;
+        }
+
+        return cost;
+    }
+
+    void constructPath(Grid grid, Node current) {
+        if (current.lRHS != 0) {
+            int minCost = Integer.MAX_VALUE;
+            List<Node> neighbors = getNeighbors(grid, current);
+            for (Node neighbor : neighbors) {
+                if (neighbor.lRHS < minCost) {
+                    System.out.println(current.lRHS);
+                    System.out.println(neighbor.lRHS);
+
+                    minCost = neighbor.lRHS;
+                    neighbor.isShortestPath = true;
+                    constructPath(grid, neighbor);
+                }
+            }
+        }
+    }
+
+    List<Node> getNeighbors(Grid grid, Node node) {
+        List<Node> neighbors = new ArrayList<>();
+        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        for (int[] dir : directions) {
+            int newRow = node.row + dir[0];
+            int newCol = node.col + dir[1];
+            if (grid.isValidCoord(newRow, newCol)) {
+                Node neighbor = grid.grid[newRow][newCol];
+                neighbors.add(neighbor);
+            }
+        }
+        return neighbors;
+    }
+
+    int compareKeys(int[] keyA, int[] keyB) {
+        if (keyA[0] < keyB[0]) return -1;
+        if (keyA[0] > keyB[0]) return 1;
+        if (keyA[1] < keyB[1]) return -1;
+        if (keyA[1] > keyB[1]) return 1;
+        return 0;  // Keys are equal
+    }
+
 }

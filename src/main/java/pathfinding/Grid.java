@@ -4,13 +4,14 @@ import java.util.*;
 public class Grid {
     Node start;
     Node goal;
-    public static Node[][] grid;
+    public Node[][] grid;
     Random random = new Random();
-    int size = grid.length;
+    int size;
 
     public Grid(int size) {
-        grid = new Node[size][size];
+        this.size = size;
 
+        grid = new Node[size][size];
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
                 grid[row][col] = new Node(row, col);
@@ -22,10 +23,19 @@ public class Grid {
     public void clearGrid() {
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
-                grid[row][col].isStart = false;
-                grid[row][col].isGoal = false;
-                grid[row][col].isObstacle = false;
+//                grid[row][col].isStart = false;
+//                grid[row][col].isGoal = false;
+//                grid[row][col].isObstacle = false;
                 grid[row][col].isShortestPath = false;
+                grid[row][col].aF = 0;
+                grid[row][col].aG = 0;
+                grid[row][col].aH = 0;
+                grid[row][col].distance = Integer.MAX_VALUE;
+                grid[row][col].lRHS = Integer.MAX_VALUE;
+                grid[row][col].lG = Integer.MAX_VALUE;
+                grid[row][col].parent = null;
+                grid[row][col].inQ = false;
+
             }
         }
     }
@@ -53,11 +63,11 @@ public class Grid {
         grid[goalRow][goalCol].isGoal = true;
     }
 
+    // TODO: maybe make this not require clearing the entire grid...
     public void setStart(int row, int col) {
         clearGrid();
         grid[row][col].isStart = true;
     }
-
     public void setGoal(int row, int col) {
         clearGrid();
         grid[row][col].isGoal = true;
@@ -119,6 +129,68 @@ public class Grid {
         Collections.shuffle(availableNodes);
         for (int i = 0; i < obstacleCount; i++) {
             availableNodes.get(i).isObstacle = true;
+        }
+    }
+
+    public void moveObstacles(int percent) {
+        if (percent < 0 || percent > 100) {
+            throw new IllegalArgumentException("Percentage must be between 0 and 100");
+        }
+
+        List<Node> availableNodes = new ArrayList<>();
+        List<Node> obstacleNodes = new ArrayList<>();
+
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                if (!grid[row][col].isStart && !grid[row][col].isGoal) {
+                    if (grid[row][col].isObstacle) {
+                        obstacleNodes.add(grid[row][col]);
+                    } else {
+                        availableNodes.add(grid[row][col]);
+                    }
+                }
+            }
+        }
+
+        int obstaclesToMove = (int) (obstacleNodes.size() * (percent / 100.0));
+        if (availableNodes.size() < obstaclesToMove) {
+            throw new IllegalArgumentException("Impossible configuration: Not enough free nodes to move " + percent + "% obstacles.");
+        }
+
+        Collections.shuffle(availableNodes);
+        Collections.shuffle(obstacleNodes);
+
+        for (int i = 0; i < obstaclesToMove; i++) {
+            Node obstacleNode = obstacleNodes.get(i);
+            Node availableNode = availableNodes.get(i);
+            obstacleNode.isObstacle = !obstacleNode.isObstacle;
+            availableNode.isObstacle = !availableNode.isObstacle;
+        }
+    }
+
+    // Check if a node is within bounds
+    public boolean isValidCoord(int row, int col) {
+        return row >= 0 && row < size && col >= 0 && col < size;
+    }
+
+    public int pathLength() {
+        int count = 0;
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                if (grid[row][col].isShortestPath) {
+                    count++;
+                }
+            }
+        }
+        clearShortestPath();
+        return count;
+    }
+
+    public void clearShortestPath() {
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                grid[row][col].isShortestPath = false;
+            }
         }
     }
 }
