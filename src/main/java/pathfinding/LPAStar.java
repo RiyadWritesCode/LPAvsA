@@ -15,7 +15,7 @@ public class LPAStar {
         start.lRHS = 0;
         pq.add(start);
 
-        while (!pq.isEmpty() && (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1 || goal.lRHS != goal.lG)) {
+        while (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1 || goal.lRHS != goal.lG) {
             Node u = pq.poll();
             if (u.lG > u.lRHS) {
                 u.lG = u.lRHS;
@@ -67,20 +67,20 @@ public class LPAStar {
     }
 
     void constructPath(Grid grid, Node current) {
+        current.isShortestPath = true;
+
         if (!current.isStart) {
-            current.isShortestPath = true;
             int minCost = 999999999;
             List<Node> neighbors = getNeighbors(grid, current);
+            Node bestNeighbor = null;
             for (Node neighbor : neighbors) {
                 if (neighbor.lG < minCost) {
-                    System.out.println(current.lG);
-                    System.out.println(neighbor.lG);
-
                     minCost = neighbor.lG;
-                    neighbor.isShortestPath = true;
-                    constructPath(grid, neighbor);
+                    bestNeighbor = neighbor;
                 }
             }
+
+            constructPath(grid, bestNeighbor);
         }
     }
 

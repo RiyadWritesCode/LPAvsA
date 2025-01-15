@@ -11,7 +11,7 @@ public class Benchmark {
         dijkstra = new Dijkstra();
         astar = new AStar();
         lpastar = new LPAStar();
-        grid = new Grid(50);
+        grid = new Grid(200);
 
         grid.setRandomStartAndGoal();
         grid.setRandomObstacles(40);
