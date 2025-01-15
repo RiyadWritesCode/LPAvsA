@@ -36,6 +36,6 @@ public class Node {
         int dx = Math.abs(this.col - goal.col);
         int dy = Math.abs(this.row - goal.row);
 
-        return 10 * (dx + dy);
+        return 10 * (dx + dy) + (14 - (2 * 10)) * Math.min(dx, dy);
     }
 }

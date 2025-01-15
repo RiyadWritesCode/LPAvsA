@@ -90,7 +90,6 @@ public class LPAStar {
 
     void constructPath(Grid grid, Node current) {
         current.isShortestPath = true;
-        System.out.println(current.lG);
         if (!current.isStart) {
             Node bestNeighbor = null;
             List<Node> neighbors = getNeighbors(grid, current);
