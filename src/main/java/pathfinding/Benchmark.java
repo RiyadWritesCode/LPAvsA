@@ -1,6 +1,8 @@
 package pathfinding;
 
 import java.util.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 
 public class Benchmark {
 
@@ -11,17 +13,22 @@ public class Benchmark {
         LPAStar lpastar = new LPAStar();
 
         // Create and set up the grid
-        Grid grid = new Grid(200);
+        Grid grid = new Grid(100);
         grid.setRandomStartAndGoal();
-        grid.setRandomObstacles(40);
+        grid.setRandomObstacles(20);
 
         // 1) Dijkstra
+        long dijkstraMemoryBefore = getUsedMemory();
         long dijkstraStart = System.nanoTime();
         grid = dijkstra.run(grid);
         long dijkstraEnd = System.nanoTime();
+        long dijkstraMemoryAfter = getUsedMemory();
+        dijkstra.constructPath(grid.findGoal());
+        long dijkstraMemoryUsed = dijkstraMemoryAfter - dijkstraMemoryBefore;
         System.out.println("Dijkstra path length: " + grid.pathLength());
         System.out.println("Dijkstra path cost: " + grid.getShortestPathCost());
-        System.out.println("Dijkstra took " + (dijkstraEnd - dijkstraStart) + " ns");
+        System.out.println("Dijkstra used memory: " + dijkstraMemoryUsed + " bytes");
+        System.out.println("Dijkstra took " + (dijkstraEnd - dijkstraStart)/1000000 + " ms");
 
         // Clear grid for next algorithm
         grid.clearGrid();
@@ -30,9 +37,10 @@ public class Benchmark {
         long astarStart = System.nanoTime();
         grid = astar.run(grid);
         long astarEnd = System.nanoTime();
+        astar.constructPath(grid.findGoal());
         System.out.println("A* path length: " + grid.pathLength());
         System.out.println("A* path cost: " + grid.getShortestPathCost());
-        System.out.println("A* took " + (astarEnd - astarStart) + " ns");
+        System.out.println("A* took " + (astarEnd - astarStart)/1000000 + " ms");
 
         // Clear grid for next algorithm
         grid.clearGrid();
@@ -41,18 +49,37 @@ public class Benchmark {
         long lpaStart = System.nanoTime();
         grid = lpastar.run(grid);
         long lpaEnd = System.nanoTime();
+        lpastar.constructPath(grid, grid.findGoal());
         System.out.println("LPA* path length: " + grid.pathLength());
         System.out.println("LPA* path cost: " + grid.getShortestPathCost());
-        System.out.println("LPA* took " + (lpaEnd - lpaStart) + " ns");
+        System.out.println("LPA* took " + (lpaEnd - lpaStart)/1000000 + " ms");
 
         // Move obstacles and update LPA* again
-        List<Node> updatedNodes = grid.moveObstacles(10);
+        List<Node> updatedNodes = grid.moveObstacles(1);
 
         long lpaUpdateStart = System.nanoTime();
         grid = lpastar.runUpdate(grid, updatedNodes);
         long lpaUpdateEnd = System.nanoTime();
+        lpastar.constructPath(grid, grid.findGoal());
         System.out.println("LPA* (after update) path length: " + grid.pathLength());
         System.out.println("LPA* (after update) path cost: " + grid.getShortestPathCost());
-        System.out.println("LPA* update took " + (lpaUpdateEnd - lpaUpdateStart) + " ns");
+        System.out.println("LPA* update took " + (lpaUpdateEnd - lpaUpdateStart)/1000000 + " ms");
     }
+
+    public static long getUsedMemory() {
+        // garbage collector to minimize "noise"
+        System.gc();
+        System.gc();
+        // Let the JVM settle a bit
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.totalMemory() - runtime.freeMemory();
+    }
+
+
 }

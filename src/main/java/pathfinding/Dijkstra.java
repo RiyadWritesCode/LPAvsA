@@ -15,7 +15,6 @@ public class Dijkstra {
             if (current.visited) continue;
             current.visited = true;
             if (current == grid.findGoal()) {
-                constructPath(current);
                 return grid;
             }
             for (int[] dir: directions) {

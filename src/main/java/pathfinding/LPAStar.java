@@ -18,6 +18,7 @@ public class LPAStar {
         pq.add(start);
 
         computeShortestPath(grid, goal);
+
         return grid;
     }
 
@@ -37,7 +38,6 @@ public class LPAStar {
                 updateNode(grid, neighbor);
             }
         }
-        constructPath(grid, goal);
 
     }
 

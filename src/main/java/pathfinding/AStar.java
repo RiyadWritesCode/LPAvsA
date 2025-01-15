@@ -23,7 +23,6 @@ public class AStar {
             Node current = openList.poll();
 
             if (current == goal) {
-                constructPath(current);
                 return grid;
             }
 
