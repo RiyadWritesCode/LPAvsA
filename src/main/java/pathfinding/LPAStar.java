@@ -15,13 +15,13 @@ public class LPAStar {
         start.lRHS = 0;
         pq.add(start);
 
-        while (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1 || goal.lRHS != goal.lG) {
+        while (!pq.isEmpty() && (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1 || goal.lRHS != goal.lG)) {
             Node u = pq.poll();
             if (u.lG > u.lRHS) {
                 u.lG = u.lRHS;
                 updateVertex(grid, pq, u);
             } else {
-                u.lG = Integer.MAX_VALUE;
+                u.lG = 999999999;
                 updateVertex(grid, pq, u);
             }
 
@@ -37,7 +37,7 @@ public class LPAStar {
 
     void updateVertex(Grid grid, PriorityQueue pq, Node u) {
         if (u != grid.findStart()) {
-            int minRHS = Integer.MAX_VALUE;
+            int minRHS = 999999999;
 
             List<Node> neighbors = getNeighbors(grid, u);
             for (Node neighbor: neighbors) {
@@ -58,7 +58,7 @@ public class LPAStar {
         int cost = 10;
         // Check if the move is diagonal by comparing the row and column differences
         if (grid.grid[a.row][a.col].isObstacle || grid.grid[b.row][b.col].isObstacle) {
-            cost = Integer.MAX_VALUE;
+            cost = 999999999;
         } else if (Math.abs(a.row - b.row) == 1 && Math.abs(a.col - b.col) == 1)  {
             cost = 14;
         }
@@ -67,15 +67,16 @@ public class LPAStar {
     }
 
     void constructPath(Grid grid, Node current) {
-        if (current.lRHS != 0) {
-            int minCost = Integer.MAX_VALUE;
+        if (!current.isStart) {
+            current.isShortestPath = true;
+            int minCost = 999999999;
             List<Node> neighbors = getNeighbors(grid, current);
             for (Node neighbor : neighbors) {
-                if (neighbor.lRHS < minCost) {
-                    System.out.println(current.lRHS);
-                    System.out.println(neighbor.lRHS);
+                if (neighbor.lG < minCost) {
+                    System.out.println(current.lG);
+                    System.out.println(neighbor.lG);
 
-                    minCost = neighbor.lRHS;
+                    minCost = neighbor.lG;
                     neighbor.isShortestPath = true;
                     constructPath(grid, neighbor);
                 }

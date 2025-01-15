@@ -4,7 +4,7 @@ public class Node {
     public boolean visited;
     Node parent = null;
 
-    public int distance = Integer.MAX_VALUE;
+    public int distance = 999999999;
     public boolean isObstacle = false;
     public boolean isStart = false;
     public boolean isGoal = false;
@@ -12,8 +12,8 @@ public class Node {
     public boolean inQ = false;
 
     public int row, col;
-    public int lG = Integer.MAX_VALUE;
-    public int lRHS = Integer.MAX_VALUE;
+    public int lG = 999999999;
+    public int lRHS = 999999999;
     public int aG;
     public int aH;
     public int aF;

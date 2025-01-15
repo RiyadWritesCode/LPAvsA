@@ -30,9 +30,9 @@ public class Grid {
                 grid[row][col].aF = 0;
                 grid[row][col].aG = 0;
                 grid[row][col].aH = 0;
-                grid[row][col].distance = Integer.MAX_VALUE;
-                grid[row][col].lRHS = Integer.MAX_VALUE;
-                grid[row][col].lG = Integer.MAX_VALUE;
+                grid[row][col].distance = 999999999;
+                grid[row][col].lRHS = 999999999;
+                grid[row][col].lG = 999999999;
                 grid[row][col].parent = null;
                 grid[row][col].inQ = false;
 
