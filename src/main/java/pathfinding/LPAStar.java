@@ -20,7 +20,9 @@ public class LPAStar {
     }
 
     public void computeShortestPath(Grid grid, Node goal) {
-        while (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1 || goal.lRHS != goal.lG) {
+        while (!pq.isEmpty() &&
+                (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1
+                        || goal.lRHS != goal.lG)) {
             Node u = pq.poll();
             if (u.lG > u.lRHS) {
                 u.lG = u.lRHS;
