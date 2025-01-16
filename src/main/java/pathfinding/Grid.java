@@ -113,6 +113,19 @@ public class Grid {
         return null;
     }
 
+    public void gridder() {
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                if (grid[row][col].lRHS > 1000000000 || grid[row][col].lRHS < 0) {
+                    grid[row][col].lRHS=999999999;
+                }
+                if (grid[row][col].lG > 1000000000 || grid[row][col].lG < 0) {
+                    grid[row][col].lG=999999999;
+                }
+            }
+        }
+    }
+
     public void setRandomObstacles(int percent) {
         if (percent < 0 || percent > 100) {
             throw new IllegalArgumentException("Percentage must be between 0 and 100");
@@ -184,6 +197,8 @@ public class Grid {
             Node availableNode = availableNodes.get(i);
             obstacleNode.isObstacle = false;
             availableNode.isObstacle = true;
+            availableNode.lRHS = 999999999;
+            availableNode.lG = 999999999;
             updatedNodes.add(obstacleNode);
             updatedNodes.add(availableNode);
         }

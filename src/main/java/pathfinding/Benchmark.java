@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Benchmark {
 
-    private static final int[] GRID_SIZES = {20};
+    private static final int[] GRID_SIZES = {50};
     private static final int[] OBSTACLE_PERCENTAGES = {5, 10, 15, 20, 25};
 
     public static void main(String[] args) {
@@ -14,10 +14,13 @@ public class Benchmark {
 
         for (int size : GRID_SIZES) {
             for (int obstaclePct : OBSTACLE_PERCENTAGES) {
-                // Create and initialize the grid
+                for (int movePct = 1; movePct <= 100; movePct++) {
+
+                    // Create and initialize the grid
                 Grid grid = new Grid(size);
                 grid.setRandomStartAndGoal();
                 grid.setRandomObstacles(obstaclePct);
+                grid.gridder();
 
                 // --- INITIAL RUNS ---
                 // Dijkstra initial
@@ -47,7 +50,6 @@ public class Benchmark {
 
                 // --- INCREMENTAL UPDATES ---
                 // For each movePct from 1% to 100%, do 99 incremental updates
-                for (int movePct = 1; movePct <= 100; movePct++) {
                     for (int i = 1; i <= 5; i++) {
                         // Move obstacles
                         grid.clearGridLPA();
