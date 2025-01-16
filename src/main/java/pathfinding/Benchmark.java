@@ -7,7 +7,6 @@ public class Benchmark {
     // Keep these as you had them
     private static final int[] GRID_SIZES = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200};
     private static final int[] OBSTACLE_PERCENTAGES = {5, 10, 15, 20, 25};
-    private static final int MOVES_COUNT = 99;
 
     public static void main(String[] args) {
         Dijkstra dijkstra = new Dijkstra();
@@ -16,10 +15,9 @@ public class Benchmark {
 
         for (int size : GRID_SIZES) {
             for (int obstaclePct : OBSTACLE_PERCENTAGES) {
-                // Create a brand-new grid
-                Grid baseGrid = new Grid(size);
-                baseGrid.setRandomStartAndGoal();
-                baseGrid.setRandomObstacles(obstaclePct);
+                Grid grid = new Grid(size);
+                grid.setRandomStartAndGoal();
+                grid.setRandomObstacles(obstaclePct);
 
                 System.out.println("======================================================");
                 System.out.println("Grid Size: " + size + "x" + size);
@@ -27,62 +25,62 @@ public class Benchmark {
 
                 // DIJKSTRA (initial)
                 long dijkstraStart = System.nanoTime();
-                baseGrid = dijkstra.run(baseGrid);
+                grid = dijkstra.run(grid);
                 long dijkstraEnd = System.nanoTime();
-                dijkstra.constructPath(baseGrid.findGoal());
-                logResults("INITIAL Dijkstra", baseGrid, dijkstraEnd - dijkstraStart);
+                dijkstra.constructPath(grid.findGoal());
+                logResults("INITIAL Dijkstra", grid, dijkstraEnd - dijkstraStart);
 
                 // Clear pathfinding data only (keep obstacles/start/goal)
-                baseGrid.clearGrid();
+                grid.clearGrid();
 
                 // ASTAR (initial)
                 long astarStart = System.nanoTime();
-                baseGrid = astar.run(baseGrid);
+                grid = astar.run(grid);
                 long astarEnd = System.nanoTime();
-                astar.constructPath(baseGrid.findGoal());
-                logResults("INITIAL A*", baseGrid, astarEnd - astarStart);
+                astar.constructPath(grid.findGoal());
+                logResults("INITIAL A*", grid, astarEnd - astarStart);
 
                 // Clear pathfinding data only
-                baseGrid.clearGrid();
+                grid.clearGrid();
 
                 // LPA* (initial)
                 long lpaStart = System.nanoTime();
-                baseGrid = lpastar.run(baseGrid);
+                grid = lpastar.run(grid);
                 long lpaEnd = System.nanoTime();
-                lpastar.constructPath(baseGrid, baseGrid.findGoal());
-                logResults("INITIAL LPA*", baseGrid, lpaEnd - lpaStart);
+                lpastar.constructPath(grid, grid.findGoal());
+                logResults("INITIAL LPA*", grid, lpaEnd - lpaStart);
 
                 // Now the incremental updates
-                for (int movePct = 1; movePct <= MOVES_COUNT; movePct++) {
+                for (int i = 1; i <= 99; i++) {
                     // Move some obstacles
-                    List<Node> updatedNodes = baseGrid.moveObstacles(movePct);
-                    Grid clonedGrid = baseGrid.clone();
-                    clonedGrid.clearGrid();
+                    grid.clearGridLPA();
+                    List<Node> updatedNodes = grid.moveObstacles(5);
 
                     // LPA* incremental update
                     long lpaStartInc = System.nanoTime();
-                    baseGrid = lpastar.runUpdate(baseGrid, updatedNodes);
+                    lpastar.constructPath(grid, grid.findGoal());
+                    grid = lpastar.runUpdate(grid, updatedNodes);
                     long lpaEndInc = System.nanoTime();
-                    lpastar.constructPath(baseGrid, baseGrid.findGoal());
-                    logResults("MOVE " + movePct + "% LPA*", baseGrid, lpaEndInc - lpaStartInc);
+                    logResults("MOVE " + 5 + "% LPA*", grid, lpaEndInc - lpaStartInc);
+
+                    grid.clearGridLPA();
 
                     // A* from scratch
                     long astarStartInc = System.nanoTime();
-                    clonedGrid = astar.run(clonedGrid);
+                    grid = astar.run(grid);
                     long astarEndInc = System.nanoTime();
-                    astar.constructPath(clonedGrid.findGoal());
-                    logResults("MOVE " + movePct + "% A*", clonedGrid, astarEndInc - astarStartInc);
-
+                    astar.constructPath(grid.findGoal());
+                    logResults("MOVE " + 5 + "% A*", grid, astarEndInc - astarStartInc);
 
 
                     // Clear pathfinding data only
-                    clonedGrid.clearGrid();
+                    grid.clearGridLPA();
 // DIJKSTRA from scratch
                     long dijkstraStartInc = System.nanoTime();
-                    clonedGrid = dijkstra.run(clonedGrid);
+                    grid = dijkstra.run(grid);
                     long dijkstraEndInc = System.nanoTime();
-                    dijkstra.constructPath(clonedGrid.findGoal());
-                    logResults("MOVE " + movePct + "% Dijkstra", clonedGrid, dijkstraEndInc - dijkstraStartInc);
+                    dijkstra.constructPath(grid.findGoal());
+                    logResults("MOVE " + 5 + "% Dijkstra", grid, dijkstraEndInc - dijkstraStartInc);
 
                 }
             }

@@ -20,9 +20,7 @@ public class LPAStar {
     }
 
     public void computeShortestPath(Grid grid, Node goal) {
-        while (!pq.isEmpty() &&
-                (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1
-                        || goal.lRHS != goal.lG)) {
+        while (compareKeys(pq.peek().lCalculateKey(goal), goal.lCalculateKey(goal)) == -1 || goal.lRHS != goal.lG) {
             Node u = pq.poll();
             if (u.lG > u.lRHS) {
                 u.lG = u.lRHS;
@@ -82,22 +80,31 @@ public class LPAStar {
         return cost;
     }
 
-    void constructPath(Grid grid, Node current) {
+//    void constructPath(Grid grid, Node current) {
+//        current.isShortestPath = true;
+//        if (!current.isStart) {
+//            Node bestNeighbor = null;
+//            List<Node> neighbors = getNeighbors(grid, current);
+//            int minCost = 999999999;
+//            for (Node neighbor : neighbors) {
+//                if (neighbor.lG < minCost) {
+//                    minCost = neighbor.lG;
+//                    bestNeighbor = neighbor;
+//                }
+//            }
+//            current.parent = bestNeighbor;
+//            constructPath(grid, bestNeighbor);
+//        }
+//    }
+public void constructPath(Grid grid, Node goal) {
+    // Start at the goal node, follow parents back to the start
+    Node current = goal;
+    while (current != null) {
         current.isShortestPath = true;
-        if (!current.isStart) {
-            Node bestNeighbor = null;
-            List<Node> neighbors = getNeighbors(grid, current);
-            int minCost = 999999999;
-            for (Node neighbor : neighbors) {
-                if (neighbor.lG < minCost) {
-                    minCost = neighbor.lG;
-                    bestNeighbor = neighbor;
-                }
-            }
-            current.parent = bestNeighbor;
-            constructPath(grid, bestNeighbor);
-        }
+        current = current.parent;
     }
+}
+
 
     List<Node> getNeighbors(Grid grid, Node node) {
         List<Node> neighbors = new ArrayList<>();

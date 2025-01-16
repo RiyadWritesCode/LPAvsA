@@ -40,6 +40,25 @@ public class Grid {
         }
     }
 
+    public void clearGridLPA() {
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+//                grid[row][col].isStart = false;
+//                grid[row][col].isGoal = false;
+//                grid[row][col].isObstacle = false;
+                grid[row][col].isShortestPath = false;
+                grid[row][col].aF = 0;
+                grid[row][col].aG = 0;
+                grid[row][col].aH = 0;
+                grid[row][col].distance = 999999999;
+                grid[row][col].parent = null;
+                grid[row][col].inQ = false;
+                grid[row][col].visited = false;
+
+            }
+        }
+    }
+
     public void clearObstacles() {
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
