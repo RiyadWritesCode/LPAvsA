@@ -10,7 +10,6 @@ public class Grid {
 
     public Grid(int size) {
         this.size = size;
-
         grid = new Node[size][size];
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
@@ -63,7 +62,6 @@ public class Grid {
         grid[goalRow][goalCol].isGoal = true;
     }
 
-    // TODO: maybe make this not require clearing the entire grid...
     public void setStart(int row, int col) {
         clearGrid();
         grid[row][col].isStart = true;
@@ -166,8 +164,6 @@ public class Grid {
             Node availableNode = availableNodes.get(i);
             obstacleNode.isObstacle = false;
             availableNode.isObstacle = true;
-//            grid[availableNode.row][availableNode.col].lRHS = 999999999;
-//            grid[availableNode.row][availableNode.col].lG = 999999999;
             updatedNodes.add(obstacleNode);
             updatedNodes.add(availableNode);
         }

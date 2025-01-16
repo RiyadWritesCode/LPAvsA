@@ -15,13 +15,11 @@ public class AStar {
         start.aF = start.aG + start.aH;
 
         openList.add(start);
-
         // right, left, up, down, top-right, top-left, bottom-right, bottom-left
         int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
         while(!openList.isEmpty()) {
             Node current = openList.poll();
-
             if (current == goal) {
                 return grid;
             }
@@ -36,16 +34,13 @@ public class AStar {
                     if (neighbor.isObstacle || closedList.contains(neighbor)) {
                         continue;
                     }
-
                     int moveCost = (dir[0] != 0 && dir[1] != 0) ? 14 : 10;
                     int tentativeG = current.aG + moveCost;
-
                     if (!openList.contains(neighbor) || tentativeG < neighbor.aG) {
                         neighbor.aG = tentativeG;
                         neighbor.aH = neighbor.heuristic(goal);
                         neighbor.aF = neighbor.aG + neighbor.aH;
                         neighbor.parent = current;
-
                         // Add the child to the open list if not already there
                         if (!openList.contains(neighbor)) {
                             openList.add(neighbor);

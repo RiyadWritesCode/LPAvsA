@@ -1,5 +1,4 @@
 package pathfinding;
-
 import java.util.*;
 
 public class LPAStar {
@@ -16,9 +15,7 @@ public class LPAStar {
 
         start.lRHS = 0;
         pq.add(start);
-
         computeShortestPath(grid, goal);
-
         return grid;
     }
 
@@ -32,13 +29,11 @@ public class LPAStar {
                 u.lG = 999999999;
                 updateNode(grid, u);
             }
-
             List<Node> neighbors = getNeighbors(grid, u);
             for (Node neighbor: neighbors) {
                 updateNode(grid, neighbor);
             }
         }
-
     }
 
     public Grid runUpdate(Grid grid, List<Node> updatedNodes) {
@@ -60,7 +55,6 @@ public class LPAStar {
     void updateNode(Grid grid, Node u) {
         if (u != grid.findStart()) {
             int minRHS = 999999999;
-
             List<Node> neighbors = getNeighbors(grid, u);
             for (Node neighbor: neighbors) {
                 int tentativeRHS = neighbor.lG + getCost(grid, neighbor, u);
@@ -78,13 +72,11 @@ public class LPAStar {
 
     public static int getCost(Grid grid, Node a, Node b) {
         int cost = 10;
-        // Check if the move is diagonal by comparing the row and column differences
 //        if (grid.grid[a.row][a.col].isObstacle || grid.grid[b.row][b.col].isObstacle) {
 //            cost = 999999999;
         if (Math.abs(a.row - b.row) == 1 && Math.abs(a.col - b.col) == 1)  {
             cost = 14;
         }
-
         return cost;
     }
 
@@ -100,7 +92,6 @@ public class LPAStar {
                     bestNeighbor = neighbor;
                 }
             }
-
             current.parent = bestNeighbor;
             constructPath(grid, bestNeighbor);
         }
@@ -127,5 +118,4 @@ public class LPAStar {
         if (keyA[1] > keyB[1]) return 1;
         return 0;  // Keys are equal
     }
-
 }

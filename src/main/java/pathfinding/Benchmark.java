@@ -1,13 +1,10 @@
 package pathfinding;
-
 import java.util.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 
 public class Benchmark {
-
     public static void main(String[] args) {
-        // Create instances of the algorithms
         Dijkstra dijkstra = new Dijkstra();
         AStar astar = new AStar();
         LPAStar lpastar = new LPAStar();
@@ -16,6 +13,9 @@ public class Benchmark {
         Grid grid = new Grid(100);
         grid.setRandomStartAndGoal();
         grid.setRandomObstacles(20);
+
+        Runtime runtime = Runtime.getRuntime();
+        System.out.println(runtime.totalMemory()-runtime.freeMemory());
 
         // 1) Dijkstra
         long dijkstraMemoryBefore = getUsedMemory();
@@ -29,8 +29,8 @@ public class Benchmark {
         System.out.println("Dijkstra path cost: " + grid.getShortestPathCost());
         System.out.println("Dijkstra used memory: " + dijkstraMemoryUsed + " bytes");
         System.out.println("Dijkstra took " + (dijkstraEnd - dijkstraStart)/1000000 + " ms");
+        System.out.println(runtime.totalMemory()-runtime.freeMemory());
 
-        // Clear grid for next algorithm
         grid.clearGrid();
 
         // 2) A*
@@ -41,8 +41,8 @@ public class Benchmark {
         System.out.println("A* path length: " + grid.pathLength());
         System.out.println("A* path cost: " + grid.getShortestPathCost());
         System.out.println("A* took " + (astarEnd - astarStart)/1000000 + " ms");
+        System.out.println(runtime.totalMemory()-runtime.freeMemory());
 
-        // Clear grid for next algorithm
         grid.clearGrid();
 
         // 3) LPA*
@@ -53,6 +53,7 @@ public class Benchmark {
         System.out.println("LPA* path length: " + grid.pathLength());
         System.out.println("LPA* path cost: " + grid.getShortestPathCost());
         System.out.println("LPA* took " + (lpaEnd - lpaStart)/1000000 + " ms");
+        System.out.println(runtime.totalMemory()-runtime.freeMemory());
 
         // Move obstacles and update LPA* again
         List<Node> updatedNodes = grid.moveObstacles(1);
@@ -64,22 +65,6 @@ public class Benchmark {
         System.out.println("LPA* (after update) path length: " + grid.pathLength());
         System.out.println("LPA* (after update) path cost: " + grid.getShortestPathCost());
         System.out.println("LPA* update took " + (lpaUpdateEnd - lpaUpdateStart)/1000000 + " ms");
+        System.out.println(runtime.totalMemory()-runtime.freeMemory());
     }
-
-    public static long getUsedMemory() {
-        // garbage collector to minimize "noise"
-        System.gc();
-        System.gc();
-        // Let the JVM settle a bit
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Runtime runtime = Runtime.getRuntime();
-        return runtime.totalMemory() - runtime.freeMemory();
-    }
-
-
 }
