@@ -73,37 +73,29 @@ public class LPAStar {
     public static int getCost(Grid grid, Node a, Node b) {
         int cost = 10;
 //        if (grid.grid[a.row][a.col].isObstacle || grid.grid[b.row][b.col].isObstacle) {
-//            cost = 999999999;
+//            cost = 999999999;}
         if (Math.abs(a.row - b.row) == 1 && Math.abs(a.col - b.col) == 1)  {
             cost = 14;
         }
         return cost;
     }
 
-//    void constructPath(Grid grid, Node current) {
-//        current.isShortestPath = true;
-//        if (!current.isStart) {
-//            Node bestNeighbor = null;
-//            List<Node> neighbors = getNeighbors(grid, current);
-//            int minCost = 999999999;
-//            for (Node neighbor : neighbors) {
-//                if (neighbor.lG < minCost) {
-//                    minCost = neighbor.lG;
-//                    bestNeighbor = neighbor;
-//                }
-//            }
-//            current.parent = bestNeighbor;
-//            constructPath(grid, bestNeighbor);
-//        }
-//    }
-public void constructPath(Grid grid, Node goal) {
-    // Start at the goal node, follow parents back to the start
-    Node current = goal;
-    while (current != null) {
+    void constructPath(Grid grid, Node current) {
         current.isShortestPath = true;
-        current = current.parent;
+        if (!current.isStart) {
+            Node bestNeighbor = null;
+            List<Node> neighbors = getNeighbors(grid, current);
+            int minCost = 999999999;
+            for (Node neighbor : neighbors) {
+                if (neighbor.lG < minCost) {
+                    minCost = neighbor.lG;
+                    bestNeighbor = neighbor;
+                }
+            }
+            current.parent = bestNeighbor;
+            constructPath(grid, bestNeighbor);
+        }
     }
-}
 
 
     List<Node> getNeighbors(Grid grid, Node node) {

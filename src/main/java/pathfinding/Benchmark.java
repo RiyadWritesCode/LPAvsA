@@ -4,8 +4,7 @@ import java.util.List;
 
 public class Benchmark {
 
-    // Keep these as you had them
-    private static final int[] GRID_SIZES = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200};
+    private static final int[] GRID_SIZES = {20};
     private static final int[] OBSTACLE_PERCENTAGES = {5, 10, 15, 20, 25};
 
     public static void main(String[] args) {
@@ -15,73 +14,68 @@ public class Benchmark {
 
         for (int size : GRID_SIZES) {
             for (int obstaclePct : OBSTACLE_PERCENTAGES) {
+                // Create and initialize the grid
                 Grid grid = new Grid(size);
                 grid.setRandomStartAndGoal();
                 grid.setRandomObstacles(obstaclePct);
 
-                System.out.println("======================================================");
-                System.out.println("Grid Size: " + size + "x" + size);
-                System.out.println("Initial Obstacle %: " + obstaclePct + "%"); // <-- Fixed
-
-                // DIJKSTRA (initial)
+                // --- INITIAL RUNS ---
+                // Dijkstra initial
                 long dijkstraStart = System.nanoTime();
                 grid = dijkstra.run(grid);
                 long dijkstraEnd = System.nanoTime();
                 dijkstra.constructPath(grid.findGoal());
-                logResults("INITIAL Dijkstra", grid, dijkstraEnd - dijkstraStart);
+                logResults("INITIAL_Dijkstra", size, obstaclePct, grid, dijkstraEnd - dijkstraStart);
 
-                // Clear pathfinding data only (keep obstacles/start/goal)
-                grid.clearGrid();
+                grid.clearGrid(); // Clear pathfinding data
 
-                // ASTAR (initial)
+                // A* initial
                 long astarStart = System.nanoTime();
                 grid = astar.run(grid);
                 long astarEnd = System.nanoTime();
                 astar.constructPath(grid.findGoal());
-                logResults("INITIAL A*", grid, astarEnd - astarStart);
+                logResults("INITIAL_A*", size, obstaclePct, grid, astarEnd - astarStart);
 
-                // Clear pathfinding data only
-                grid.clearGrid();
+                grid.clearGrid(); // Clear pathfinding data
 
-                // LPA* (initial)
+                // LPA* initial
                 long lpaStart = System.nanoTime();
                 grid = lpastar.run(grid);
                 long lpaEnd = System.nanoTime();
                 lpastar.constructPath(grid, grid.findGoal());
-                logResults("INITIAL LPA*", grid, lpaEnd - lpaStart);
+                logResults("INITIAL_LPA*", size, obstaclePct, grid, lpaEnd - lpaStart);
 
-                // Now the incremental updates
-                for (int i = 1; i <= 99; i++) {
-                    // Move some obstacles
-                    grid.clearGridLPA();
-                    List<Node> updatedNodes = grid.moveObstacles(5);
+                // --- INCREMENTAL UPDATES ---
+                // For each movePct from 1% to 100%, do 99 incremental updates
+                for (int movePct = 1; movePct <= 100; movePct++) {
+                    for (int i = 1; i <= 5; i++) {
+                        // Move obstacles
+                        grid.clearGridLPA();
+                        List<Node> updatedNodes = grid.moveObstacles(movePct);
 
-                    // LPA* incremental update
-                    long lpaStartInc = System.nanoTime();
-                    lpastar.constructPath(grid, grid.findGoal());
-                    grid = lpastar.runUpdate(grid, updatedNodes);
-                    long lpaEndInc = System.nanoTime();
-                    logResults("MOVE " + 5 + "% LPA*", grid, lpaEndInc - lpaStartInc);
+                        // LPA* incremental update
+                        long lpaStartInc = System.nanoTime();
+                        lpastar.constructPath(grid, grid.findGoal());
+                        grid = lpastar.runUpdate(grid, updatedNodes);
+                        long lpaEndInc = System.nanoTime();
+                        logResults("MOVE_" + movePct + "_LPA*", size, obstaclePct, grid, lpaEndInc - lpaStartInc);
 
-                    grid.clearGridLPA();
+                        // A* from scratch
+                        grid.clearGridLPA();
+                        long astarStartInc = System.nanoTime();
+                        grid = astar.run(grid);
+                        long astarEndInc = System.nanoTime();
+                        astar.constructPath(grid.findGoal());
+                        logResults("MOVE_" + movePct + "_A*", size, obstaclePct, grid, astarEndInc - astarStartInc);
 
-                    // A* from scratch
-                    long astarStartInc = System.nanoTime();
-                    grid = astar.run(grid);
-                    long astarEndInc = System.nanoTime();
-                    astar.constructPath(grid.findGoal());
-                    logResults("MOVE " + 5 + "% A*", grid, astarEndInc - astarStartInc);
-
-
-                    // Clear pathfinding data only
-                    grid.clearGridLPA();
-// DIJKSTRA from scratch
-                    long dijkstraStartInc = System.nanoTime();
-                    grid = dijkstra.run(grid);
-                    long dijkstraEndInc = System.nanoTime();
-                    dijkstra.constructPath(grid.findGoal());
-                    logResults("MOVE " + 5 + "% Dijkstra", grid, dijkstraEndInc - dijkstraStartInc);
-
+                        // Dijkstra from scratch
+                        grid.clearGridLPA();
+                        long dijkstraStartInc = System.nanoTime();
+                        grid = dijkstra.run(grid);
+                        long dijkstraEndInc = System.nanoTime();
+                        dijkstra.constructPath(grid.findGoal());
+                        logResults("MOVE_" + movePct + "_Dijkstra", size, obstaclePct, grid, dijkstraEndInc - dijkstraStartInc);
+                    }
                 }
             }
         }
@@ -89,10 +83,16 @@ public class Benchmark {
         System.out.println("All benchmarks complete.");
     }
 
-    private static void logResults(String label, Grid grid, long nanos) {
-        System.out.println("---------------------------------");
-        System.out.println("[" + label + "] Path Length: " + grid.pathLength());
-        System.out.println("[" + label + "] Path Cost:   " + grid.getShortestPathCost());
-        System.out.println("[" + label + "] Time (ns):   " + nanos);
+    /**
+     * Logs results in a single line:
+     * Format: label, gridSize, obstaclePct, pathLength, pathCost, timeNs
+     */
+    private static void logResults(String label, int gridSize, int obstaclePct, Grid grid, long nanos) {
+        System.out.println(label + ","
+                + gridSize + "x" + gridSize + ","
+                + obstaclePct + "%,"
+                + grid.pathLength() + ","
+                + grid.getShortestPathCost() + ","
+                + nanos);
     }
 }
