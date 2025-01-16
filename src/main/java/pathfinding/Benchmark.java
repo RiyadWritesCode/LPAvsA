@@ -1,70 +1,62 @@
 package pathfinding;
+
 import java.util.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 
 public class Benchmark {
+
     public static void main(String[] args) {
+        // Instantiate Dijkstra once (assuming thread-safe usage)
         Dijkstra dijkstra = new Dijkstra();
-        AStar astar = new AStar();
-        LPAStar lpastar = new LPAStar();
 
-        // Create and set up the grid
-        Grid grid = new Grid(100);
-        grid.setRandomStartAndGoal();
-        grid.setRandomObstacles(20);
+        // Grid sizes you want to test
+        int[] gridSizes = {20, 60, 100, 140, 180, 220, 260, 300};
 
-        Runtime runtime = Runtime.getRuntime();
-        System.out.println(runtime.totalMemory()-runtime.freeMemory());
+        // Obstacle densities in percent
+        int[] obstacleDensities = {5, 10, 15, 20, 25, 30, 35, 40,
+                45, 50, 55, 60, 65, 70, 75, 80};
 
-        // 1) Dijkstra
-        long dijkstraMemoryBefore = getUsedMemory();
-        long dijkstraStart = System.nanoTime();
-        grid = dijkstra.run(grid);
-        long dijkstraEnd = System.nanoTime();
-        long dijkstraMemoryAfter = getUsedMemory();
-        dijkstra.constructPath(grid.findGoal());
-        long dijkstraMemoryUsed = dijkstraMemoryAfter - dijkstraMemoryBefore;
-        System.out.println("Dijkstra path length: " + grid.pathLength());
-        System.out.println("Dijkstra path cost: " + grid.getShortestPathCost());
-        System.out.println("Dijkstra used memory: " + dijkstraMemoryUsed + " bytes");
-        System.out.println("Dijkstra took " + (dijkstraEnd - dijkstraStart)/1000000 + " ms");
-        System.out.println(runtime.totalMemory()-runtime.freeMemory());
+        // Number of trials per (gridSize, obstacleDensity) pair
+        int trials = 100;
 
-        grid.clearGrid();
+        System.out.println("Running Dijkstra benchmarks...");
+        System.out.println("Format: gridSize, obstacleDensity(%), successRate");
 
-        // 2) A*
-        long astarStart = System.nanoTime();
-        grid = astar.run(grid);
-        long astarEnd = System.nanoTime();
-        astar.constructPath(grid.findGoal());
-        System.out.println("A* path length: " + grid.pathLength());
-        System.out.println("A* path cost: " + grid.getShortestPathCost());
-        System.out.println("A* took " + (astarEnd - astarStart)/1000000 + " ms");
-        System.out.println(runtime.totalMemory()-runtime.freeMemory());
+        for (int size : gridSizes) {
+            for (int density : obstacleDensities) {
 
-        grid.clearGrid();
+                int successCount = 0; // how many times we found a valid path
 
-        // 3) LPA*
-        long lpaStart = System.nanoTime();
-        grid = lpastar.run(grid);
-        long lpaEnd = System.nanoTime();
-        lpastar.constructPath(grid, grid.findGoal());
-        System.out.println("LPA* path length: " + grid.pathLength());
-        System.out.println("LPA* path cost: " + grid.getShortestPathCost());
-        System.out.println("LPA* took " + (lpaEnd - lpaStart)/1000000 + " ms");
-        System.out.println(runtime.totalMemory()-runtime.freeMemory());
+                for (int t = 0; t < trials; t++) {
+                    // Create and set up the grid
+                    Grid grid = new Grid(size);
 
-        // Move obstacles and update LPA* again
-        List<Node> updatedNodes = grid.moveObstacles(1);
+                    // Randomly assign start and goal
+                    grid.setRandomStartAndGoal();
 
-        long lpaUpdateStart = System.nanoTime();
-        grid = lpastar.runUpdate(grid, updatedNodes);
-        long lpaUpdateEnd = System.nanoTime();
-        lpastar.constructPath(grid, grid.findGoal());
-        System.out.println("LPA* (after update) path length: " + grid.pathLength());
-        System.out.println("LPA* (after update) path cost: " + grid.getShortestPathCost());
-        System.out.println("LPA* update took " + (lpaUpdateEnd - lpaUpdateStart)/1000000 + " ms");
-        System.out.println(runtime.totalMemory()-runtime.freeMemory());
+
+                    // Place obstacles randomly
+                    grid.setRandomObstacles(density);
+
+                    // Run Dijkstra
+                    grid = dijkstra.run(grid);
+
+                    // Construct the path from goal (if it exists)
+                    dijkstra.constructPath(grid.findGoal());
+
+                    // Check path length
+                    if (grid.getShortestPathCost() > 0) {
+                        successCount++;
+                    }
+                }
+
+                // Compute average success rate
+                double successRate = (double) successCount / trials;
+
+                // Print or store results
+                // Example format: "Grid: size=20, density=5%, successRate=0.95"
+                System.out.printf("Grid=%dx%d, Density=%d%%, SuccessRate=%.3f%n",
+                        size, size, density, successRate);
+            }
+        }
     }
 }
