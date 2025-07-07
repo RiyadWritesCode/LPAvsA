@@ -1,0 +1,1 @@
+This is my IB extended essay I wrote for CS comparing the efficiency, accuracy, and scalability of two pathfinding algorithms LPA* and A* in static and dynamic environments. Here is a link to the pdf of my essay: https://drive.google.com/file/d/1GzUXIWFtf01ZuyKeer25CqOBjHCI_oXA/view?usp=sharing
